@@ -9,6 +9,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "asteroid-game-working": "file:",
     "body-parser": "^1.20.3",
     "express": "^4.21.2",
     "fs": "^0.0.1-security",
