@@ -1,4 +1,4 @@
-#IEEE Astro Game 
+IEEE Astro Game 
 
 npm pacage to install
 1. npm i http
