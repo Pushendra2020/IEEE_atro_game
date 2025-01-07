@@ -1,9 +1,4 @@
 const socket = io();
-
-// Prompt the user for their name
-//const playerName = prompt("Enter your name:");
-
-// Example: Send score updates
 function updateScore(playerId, score) {
     socket.emit('update_score', { playerId:playerName, score });
 }
