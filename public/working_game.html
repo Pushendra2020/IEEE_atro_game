@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteroid Ace</title>
+    <style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #000000;
+        }
+
+        #scoreContainer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            color: rgb(179, 149, 149);
+            font-family: Arial, sans-serif;
+            z-index: 10;
+        }
+
+
+        #resetButton {
+            display: none;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: black;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #resetButton:hover {
+            background: white;
+            color: black;
+            border: black 1px solid;
+        }
+
+        #upgradeMessage {
+            position: absolute;
+            top: 10px;
+            right: 750px;
+            font-size: 24px;
+            color: #ffffff;
+            display: none;
+            pointer-events: none;
+        }
+
+        .title-container {
+            text-align: center;
+            position: relative;
+            color: black;
+        }
+
+        .controls-container {
+            position: absolute;
+            top: 200px;
+            left: 50%;
+            transform: translateX(-450px);
+            z-index: 10;
+        }
+
+        .controls-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .controls-container p {
+            margin-bottom: 5px;
+        }
+
+
+
+        .controller-button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px #999;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .controller-button:active {
+            background-color: #555;
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        .controller-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title-container">
+        <h1>Asteroid Ace</h1>
+        <div class="controls-container">
+            <p style="text-align:center; width: 100%; font-size: 20px;text-decoration:underline;" class="controls-p">
+                <strong>Controls</strong>
+            </p>
+            <p><strong>Move Left:</strong> A ←/ left</p>
+            <p><strong>Move Right:</strong> D OR → / right</p>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas" width="500" height="500">
+
+        <div id="scoreContainer">Score: 0</div>
+    </canvas>
+    <button id="resetButton">Restart Game</button>
+    <div id="upgradeMessage">Weapon Upgraded!</div>
+
+
+    <div class="controller-container">
+        <button id="leftbnt" class="controller-button">←</button>
+        <button id="rightbnt" class="controller-button">→</button>
+    </div>
+<a href="leader.html">Leaderboard</a>
+    <script src="script.js"></script>
+
+    
+
+</body>
+
+</html>
