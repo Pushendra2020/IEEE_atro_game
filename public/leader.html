@@ -25,15 +25,19 @@
             text-align: center;
             margin-bottom: 20px;
         }
-        #leaderboard ul {
-            list-style: none;
-            padding: 0;
+        #leaderboard table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        #leaderboard li {
+        #leaderboard th, #leaderboard td {
             padding: 10px;
             border-bottom: 1px solid #ddd;
+            text-align: left;
         }
-        #leaderboard li:last-child {
+        #leaderboard th {
+            background-color: #f0f0f0;
+        }
+        #leaderboard tr:last-child td {
             border-bottom: none;
         }
     </style>
@@ -41,8 +45,19 @@
 <body>
     <div id="leaderboard">
         <h2>Leaderboard</h2>
-        <ul id="leaderboardList"></ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>Player Name</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboardTableBody">
+                <!-- Leaderboard entries will be dynamically inserted here -->
+            </tbody>
+        </table>
     </div>
+    <button id="click_bnt">Click Me</button>
     <a href="working_game.html">Game</a>
     <script src="/socket.io/socket.io.js"></script>
     <script src="leader.js"></script>

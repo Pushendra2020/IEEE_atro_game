@@ -39,10 +39,8 @@ io.on('connection', (socket) => {
 
     socket.on('update_score', (data) => {
         console.log('Score update:', data);
-        leaderboard.push(data);
-        leaderboard.sort((a, b) => b.score - a.score);
-        leaderboard = leaderboard.slice(0, 10);
-        io.emit('leaderboard_update', leaderboard);
+        const { playerName, score } = data;
+        handleScoreUpdate(playerName, score);
     });
 });
 
@@ -82,12 +80,44 @@ function handleScoreUpdate(playerName, score, res = null) {
                     if (res) res.status(500).json({ success: false, error: 'Database error' });
                     return;
                 }
-                // updateLeaderboard();
-                // if (res) res.json({ success: true });
+                
             });
         }
     });
 }
+
+app.get('/leaderboard', (req, res) => {
+    const selectQuery = 'SELECT user_name, user_score FROM userInfo ORDER BY user_score DESC LIMIT 10';
+    db.query(selectQuery, (err, results) => {
+        if (err) {
+            console.error('Error querying MySQL:', err);
+            res.status(500).json({ success: false, error: 'Database error' });
+            return;
+        }
+        res.json(results);
+    });
+});
+
+
+app.post('/deleteExceptHighest', (req, res) => {
+    const deleteQuery = `
+        DELETE FROM userInfo
+        WHERE user_score < (
+            SELECT MAX(user_score) FROM (
+                SELECT user_score FROM userInfo
+            ) AS subquery
+        )
+    `;
+    db.query(deleteQuery, (err, result) => {
+        if (err) {
+            console.error('Error deleting data from MySQL:', err);
+            res.status(500).json({ success: false, error: 'Database error' });
+            return;
+        }
+        res.json({ success: true });
+    });
+});
+
 
 const PORT = 3000;
 server.listen(PORT, () => {
