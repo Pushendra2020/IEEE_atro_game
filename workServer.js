@@ -68,7 +68,6 @@ function handleScoreUpdate(playerName, score, res = null) {
                     if (res) res.status(500).json({ success: false, error: 'Database error' });
                     return;
                 }
-                updateLeaderboard();
                 if (res) res.json({ success: true });
             });
         } else {
@@ -80,7 +79,7 @@ function handleScoreUpdate(playerName, score, res = null) {
                     if (res) res.status(500).json({ success: false, error: 'Database error' });
                     return;
                 }
-                
+                if (res) res.json({ success: true });
             });
         }
     });

@@ -220,6 +220,8 @@ function checkBulletCollision() {
                     squares.splice(squareIndex, 1);
                     bullets.splice(bulletIndex, 1);
                     score++;
+                   postScore(playerName, score); // Post the score when a square is hit
+                    //debouncePostScore(playerName, score);
                     document.getElementById('scoreContainer').innerText = `Score: ${score}`;
                     checkLevelUp();
                     checkWinCondition();
@@ -394,6 +396,7 @@ function animate(timestamp) {
     requestAnimationFrame(animate);
 }
 
+//let debounceTimeout;
 function postScore(playerName, score) {
     console.log('Posting score:', playerName, score);
     fetch('/EnterScore', {
@@ -405,9 +408,20 @@ function postScore(playerName, score) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Score posted successfully:', data);
+        if (data.success) {
+            console.log('Score posted successfully:', data);
+        } else {
+            console.error('Error posting score:', data.error);
+        }
     })
     .catch(error => {
         console.error('Error posting score:', error);
     });
 }
+
+// function debouncePostScore(playerName, score, delay = 100) {
+//     clearTimeout(debounceTimeout);
+//     debounceTimeout = setTimeout(() => {
+//         postScore(playerName, score);
+//     }, delay);
+// }
