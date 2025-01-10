@@ -1,10 +1,10 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const resetButton = document.getElementById('resetButton');
-const upgradeMessage = document.getElementById('upgradeMessage');
-
-//const socket = io();
+let lastSpawnTime = Date.now();
+let spawnQueue = 0;
 const playerName = prompt("Enter your name:");
+
 
 const gameSpace = {
     x: 50,
@@ -41,14 +41,61 @@ powerUpImage.src = 'Photos/powerup_pho1.png'; // Path to the power-up image
 
 function createSquare() {
     if (isGameOver) return;
-    const numSquares = level; // Create a number of squares equal to the current level
-    for (let i = 0; i < numSquares; i++) {
-        const size = 20;
-        const speedY = 50 + (level - 1) * 50 + Math.random() * (50 * level); // Progressive speed increase
-        const x = Math.random() * (gameSpace.size - size) + gameSpace.x;
-        const y = gameSpace.y;
-        squares.push({ x, y, size, speedY, type: 'normal' });
+    
+    const currentTime = Date.now();
+    const timeSinceLastSpawn = currentTime - lastSpawnTime;
+    
+    // Enforce minimum time between spawns (250ms)
+    if (timeSinceLastSpawn < 250) {
+        spawnQueue = Math.min(spawnQueue + 1, level * 2); // Cap the queue
+        return;
     }
+    
+    // Process queue and current spawn
+    const spawnCount = Math.min(spawnQueue + 1, level);
+    spawnQueue = Math.max(0, spawnQueue - spawnCount);
+    
+    // Create squares based on current level and queue
+    for (let i = 0; i < spawnCount; i++) {
+        const size = 20;
+        // Ensure squares are spaced out horizontally
+        const minSpacing = size * 2;
+        const availableSpace = gameSpace.size - size;
+        let x;
+        let attempts = 0;
+        
+        // Try to find a position not too close to other squares
+        do {
+            x = Math.random() * availableSpace + gameSpace.x;
+            attempts++;
+        } while (
+            isTooCloseToOtherSquares(x, size) && 
+            attempts < 5
+        );
+        
+        const speedY = 50 + (level - 1) * 50 + Math.random() * (50 * level);
+        squares.push({
+            x,
+            y: gameSpace.y,
+            size,
+            speedY,
+            type: 'normal'
+        });
+    }
+    
+    lastSpawnTime = currentTime;
+}
+
+
+function isTooCloseToOtherSquares(newX, size) {
+    const minDistance = size * 2;
+    return squares.some(square => {
+        if (square.y <= gameSpace.y + size) {  // Only check recently spawned squares
+            const distance = Math.abs(square.x - newX);
+            return distance < minDistance;
+        }
+        return false;
+    });
 }
 
 function drawScore() {
@@ -94,11 +141,11 @@ function drawSquares() {
     squares.forEach(square => {
         if (square.type === 'normal') {
             if (asteroidImage.complete) {
-                ctx.drawImage(asteroidImage, square.x, square.y, square.size * 1.5, square.size * 1.5);
+                ctx.drawImage(asteroidImage, square.x+2, square.y, square.size * 1.5, square.size * 1.5);
             }
         } else if (square.type === 'plus') {
             if (powerUpImage.complete) {
-                ctx.drawImage(powerUpImage, square.x, square.y, square.size, square.size);
+                ctx.drawImage(powerUpImage, square.x, square.y, square.size *1.5, square.size);
             }
         }
     });
@@ -144,7 +191,7 @@ function drawGameInfo() {
 function updateSquares(deltaTime) {
     squares.forEach((square, index) => {
         square.y += square.speedY * deltaTime;
-        if (checkCollision(square, ship)) {
+        if (checkShipCollision(square, ship)) {
             if (square.type === 'plus') {
                 squares.splice(index, 1);
                 upgradedBullets = 2;
@@ -152,7 +199,7 @@ function updateSquares(deltaTime) {
                 upgradeTimeout = setTimeout(() => {
                     upgradedBullets = 1;
                 }, 6000);
-                showUpgradeMessage();
+                // showUpgradeMessage();
             } else {
                 endGame();
             }
@@ -172,13 +219,31 @@ function updateSquares(deltaTime) {
     });
 }
 
-function checkCollision(square, ship) {
-    return (
-        square.x < ship.x + ship.width / 2 &&
-        square.x + square.size > ship.x - ship.width / 2 &&
-        square.y < ship.y + ship.height &&
-        square.y + square.size > ship.y
-    );
+// function checkCollision(square, ship) {
+//     return (
+//         square.x < ship.x + ship.width / 2 &&
+//         square.x + square.size > ship.x - ship.width / 2 &&
+//         square.y < ship.y + ship.height &&
+//         square.y + square.size > ship.y
+//     );
+// }
+
+
+function checkShipCollision(square, ship) {
+    const shipBox = {
+        x: ship.x - ship.width,
+        y: ship.y,
+        width: ship.width * 1,
+        height: ship.height * 2.5
+    };
+    
+    const squareBox = {
+        x: square.x + 2,
+        y: square.y,
+        size: square.size * 1.3
+    };
+    
+    return isColliding(shipBox, squareBox);
 }
 
 function checkWinCondition() {
@@ -205,26 +270,91 @@ function updateBullets(deltaTime) {
     });
 }
 
+// function checkBulletCollision() {
+//     bullets.forEach((bullet, bulletIndex) => {
+//         squares.forEach((square, squareIndex) => {
+//             if (
+//                 bullet.x < square.x + square.size &&
+//                 bullet.x + bullet.width > square.x &&
+//                 bullet.y < square.y + square.size &&
+//                 bullet.y + bullet.height > square.y
+//             ) {
+//                 if (square.type === 'plus') {
+//                     squares[squareIndex].type = 'plus';
+//                 } else {
+//                     squares.splice(squareIndex, 1);
+//                     bullets.splice(bulletIndex, 1);
+//                     score++;
+//                    postScore(playerName, score); // Post the score when a square is hit
+//                     //debouncePostScore(playerName, score);
+//                     // document.getElementById('scoreContainer').innerText = `Score: ${score}`;
+//                     checkLevelUp();
+//                     checkWinCondition();
+//                     if (counter === 10 && !hasPlusAppeared) {
+//                         createPlusSquare();
+//                     }
+//                     if (counter >= 30 && (counter - 10) % 20 === 0) {
+//                         createPlusSquare();
+//                     }
+//                 }
+//             }
+//         });
+//     });
+// }
+
+function isColliding(rect1, rect2) {
+    return (
+        rect1.x < rect2.x + rect2.size &&
+        rect1.x + rect1.width > rect2.x &&
+        rect1.y < rect2.y + rect2.size &&
+        rect1.y + rect1.height > rect2.y
+    );
+}
+
 function checkBulletCollision() {
-    bullets.forEach((bullet, bulletIndex) => {
-        squares.forEach((square, squareIndex) => {
-            if (
-                bullet.x < square.x + square.size &&
-                bullet.x + bullet.width > square.x &&
-                bullet.y < square.y + square.size &&
-                bullet.y + bullet.height > square.y
-            ) {
+    // Process collisions from the end of arrays to handle splicing correctly
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        const bullet = bullets[i];
+        
+        for (let j = squares.length - 1; j >= 0; j--) {
+            const square = squares[j];
+            
+            // Adjust collision box for visual accuracy
+            const bulletBox = {
+                x: bullet.x - 10, // Adjust based on actual bullet image size
+                y: bullet.y - 60, // Adjust based on actual bullet image size
+                width: bullet.width * 12, // Slightly smaller than visual size
+                height: bullet.height * 12
+            };
+            
+            const squareBox = {
+                x: square.x + 2,
+                y: square.y,
+                size: square.size * 1.3, // Slightly smaller than visual size for better gameplay
+            };
+            
+            if (isColliding(bulletBox, squareBox)) {
                 if (square.type === 'plus') {
-                    squares[squareIndex].type = 'plus';
+                    // Handle power-up collision
+                    squares.splice(j, 1);
+                    bullets.splice(i, 1);
+                    upgradedBullets = 2;
+                    if (upgradeTimeout) clearTimeout(upgradeTimeout);
+                    upgradeTimeout = setTimeout(() => {
+                        upgradedBullets = 1;
+                    }, 6000);
                 } else {
-                    squares.splice(squareIndex, 1);
-                    bullets.splice(bulletIndex, 1);
+                    // Handle normal asteroid collision
+                    squares.splice(j, 1);
+                    bullets.splice(i, 1);
                     score++;
-                   postScore(playerName, score); // Post the score when a square is hit
-                    //debouncePostScore(playerName, score);
-                    document.getElementById('scoreContainer').innerText = `Score: ${score}`;
+                    postScore(playerName, score);
+                    
+                    // Check for game progression
                     checkLevelUp();
                     checkWinCondition();
+                    
+                    // Check for power-up spawn conditions
                     if (counter === 10 && !hasPlusAppeared) {
                         createPlusSquare();
                     }
@@ -232,10 +362,12 @@ function checkBulletCollision() {
                         createPlusSquare();
                     }
                 }
+                break; // Exit inner loop after collision is handled
             }
-        });
-    });
+        }
+    }
 }
+
 
 function updateShip(deltaTime) {
     ship.x += ship.speed * ship.direction * deltaTime;
@@ -255,17 +387,28 @@ function checkLevelUp() {
 }
 
 function adjustLevel() {
-    spawnInterval = Math.max(200, spawnInterval - 150);
+    // Calculate new spawn interval based on level
+    spawnInterval = Math.max(400, 1000 - (level * 100));  // More gradual decrease
+    
+    // Clear and set new interval
     clearInterval(spawnTimer);
     spawnTimer = setInterval(createSquare, spawnInterval);
 }
 
-function showUpgradeMessage() {
-    upgradeMessage.style.display = 'block';
-    setTimeout(() => {
-        upgradeMessage.style.display = 'none';
-    }, 2000);
+function resetSpawnSystem() {
+    lastSpawnTime = Date.now();
+    spawnQueue = 0;
+    clearInterval(spawnTimer);
+    spawnInterval = 1000;  // Reset to initial spawn rate
+    spawnTimer = setInterval(createSquare, spawnInterval);
 }
+
+// function showUpgradeMessage() {
+//     upgradeMessage.style.display = 'block';
+//     setTimeout(() => {
+//         upgradeMessage.style.display = 'none';
+//     }, 2000);
+// }
 
 function endGame(isWin = false) {
     isGameOver = true;
@@ -287,7 +430,7 @@ function drawGameOverScreen() {
     ctx.textAlign = 'center';
     ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
     ctx.font = '24px Arial';
-    ctx.fillText('Click Restart Game to Try Again', canvas.width / 2, canvas.height / 2 + 50);
+    ctx.fillText('Well Played', canvas.width / 2, canvas.height / 2 + 50);
 }
 
 function drawWinScreen() {
@@ -354,22 +497,22 @@ setInterval(() => {
     }
 }, 500); // Adjust the interval (in milliseconds) as needed
 
-resetButton.addEventListener('click', () => {
-    isGameOver = false;
-    score = 0;
-    counter = 0;
-    level = 1;
-    squares = [];
-    bullets = [];
-    lastTimestamp = 0;
-    document.getElementById('scoreContainer').innerText = `Score: ${score}`;
-    // Clear any existing intervals or timeouts
-    clearInterval(spawnTimer);
-    if (upgradeTimeout) clearTimeout(upgradeTimeout);
-    // Restart the game
-    spawnTimer = setInterval(createSquare, spawnInterval);
-    requestAnimationFrame(animate);
-});
+// resetButton.addEventListener('click', () => {
+//     isGameOver = false;
+//     score = 0;
+//     counter = 0;
+//     level = 1;
+//     squares = [];
+//     bullets = [];
+//     lastTimestamp = 0;
+//     document.getElementById('scoreContainer').innerText = `Score: ${score}`;
+//     // Clear any existing intervals or timeouts
+//     clearInterval(spawnTimer);
+//     if (upgradeTimeout) clearTimeout(upgradeTimeout);
+//     // Restart the game
+//     spawnTimer = setInterval(createSquare, spawnInterval);
+//     requestAnimationFrame(animate);
+// });
 
 let spawnTimer = setInterval(createSquare, spawnInterval);
 createStars();
@@ -425,3 +568,7 @@ function postScore(playerName, score) {
 //         postScore(playerName, score);
 //     }, delay);
 // }
+
+
+
+
