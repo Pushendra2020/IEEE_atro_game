@@ -120,6 +120,20 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+       
+        // Check if the sessionStorage item 'hasReloaded' exists
+        if (sessionStorage.getItem("hasReloaded")) {
+          // If it exists, it means the page was reloaded
+          window.location.href = "https://www.amazon.com/";
+        } else {
+          // If it doesn't exist, this is the first load, set the flag
+          sessionStorage.setItem("hasReloaded", "true");
+        }
+
+
+      </script>
+
 </body>
 
 </html>
