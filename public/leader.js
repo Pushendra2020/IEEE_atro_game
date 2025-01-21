@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const click_bnt = document.getElementById('click_bnt');
     let previousLeaderboardData = null; // Store the previous leaderboard data
     let noChangeTimer = null; // Timer to track no changes in the leaderboard
-    const noChangeDuration = 10 *60 * 1000; // 2 minutes in milliseconds
+    const noChangeDuration = 2* 60 * 1000; // 2 minutes in milliseconds
 
     click_bnt.addEventListener('click', () => {
         fetch('/deleteExceptHighest', {

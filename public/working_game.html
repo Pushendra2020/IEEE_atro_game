@@ -1,54 +1,3 @@
- <!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asteroid Ace</title>
-    
-</head>
-
-<body>
-    <div class="title-container">
-        <h1>Asteroid Ace</h1>
-        <div class="controls-container">
-            <p style="text-align:center; width: 100%; font-size: 20px;text-decoration:underline;" class="controls-p">
-                <strong>Controls</strong>
-            </p>
-            <p><strong>Move Left:</strong> A ←/ left</p>
-            <p><strong>Move Right:</strong> D OR → / right</p>
-        </div>
-    </div>
-
-    <canvas id="gameCanvas" width="500" height="500">
-
-        <div id="scoreContainer">Score: 0</div>
-    </canvas>
-    <button id="resetButton">Restart Game</button>
-    <div id="upgradeMessage">Weapon Upgraded!</div>
-
-
-    <div class="controller-container">
-        <button id="leftbnt" class="controller-button">←</button>
-        <button id="rightbnt" class="controller-button">→</button>
-    </div>
-<a href="leader.html">Leaderboard</a>
-    <script src="script.js"></script>
-
-    
-
-</body>
-
-</html>  -->
-
-
-
-
-
-
-
-<!--  
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -56,15 +5,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asteroid Ace</title>
-   <link rel="stylesheet" href="working_game.css">
+    <link rel="stylesheet" href="working_game.css">
 </head>
-
+<script src="/socket.io/socket.io.js"></script>
+<style>
+    #waiting-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        z-index: 1000;
+    }
+</style>
 <body>
+    <div id="waiting-screen">Waiting for host approval...</div>
     <div class="title-container">
-        <h1 style="color: aqua; ">Asteroid Ace</h1>
-        <a href="leader.html">Leaderboard</a>
+        <h1 style="color: aqua;">Asteroid Ace</h1>
+        <!-- <a href="leader.html" style="background-color: gray; padding: 0.5rem; border-radius: 10px;">Leaderboard</a> -->
         <div class="controls-container">
-            <p style="text-align:center; width: 100%; font-size: 20px;text-decoration:underline;" class="controls-p">
+            <p class="controls-p">
                 <strong>Controls</strong>
             </p>
             <p><strong>Move Left:</strong> A ←/ left</p>
@@ -79,61 +45,8 @@
         <button id="leftbnt" class="controller-button">←</button>
         <button id="rightbnt" class="controller-button">→</button>
     </div>
-    
 
     <script src="script.js"></script>
-</body>
-
-</html>  -->
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asteroid Ace</title>
-    <link rel="stylesheet" href="working_game.css">
-</head>
-
-<body>
-    <div class="title-container">
-        <h1 style="color: aqua;">Asteroid Ace</h1>
-        <!-- <a href="leader.html" style="background-color: gray; padding: 0.5rem; border-radius: 10px;">Leaderboard</a> -->
-        <div class="controls-container">
-            <p class="controls-p">
-                <strong>Controls</strong>
-            </p>
-            <p><strong>Move Left:</strong> A ←/ left</p>
-            <p><strong>Move Right:</strong> D OR → / right</p>
-        </div>
-    </div>
-
-    <canvas id="gameCanvas" width="500" height="500"></canvas>
-    <!-- <div id="scoreContainer">Score: 0</div> -->
-
-    <div class="controller-container">
-        <button id="leftbnt" class="controller-button">←</button>
-        <button id="rightbnt" class="controller-button">→</button>
-    </div>
-
-    <script src="script.js"></script>
-    <script>
-       
-        // Check if the sessionStorage item 'hasReloaded' exists
-        if (sessionStorage.getItem("hasReloaded")) {
-          // If it exists, it means the page was reloaded
-          window.location.href = "https://www.amazon.com/";
-        } else {
-          // If it doesn't exist, this is the first load, set the flag
-          sessionStorage.setItem("hasReloaded", "true");
-        }
-
-
-      </script>
-
 </body>
 
 </html>

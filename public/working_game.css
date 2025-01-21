@@ -192,23 +192,6 @@ canvas {
     }
 } */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 body {
     margin: 0%;
     padding: 0%;
@@ -221,6 +204,8 @@ body {
     color: #fff;
     font-family: Arial, sans-serif;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .title-container {
@@ -263,6 +248,10 @@ canvas {
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
+    touch-action: none; /* Prevent default touch behaviors */
+    -webkit-touch-callout: none; /* Prevent callout on long press */
+    -webkit-user-select: none;
+    user-select: none;
     display: none;
 }
 
@@ -314,6 +303,9 @@ canvas {
         transform: translateX(-50%);
         display: flex;
         gap: 150px;
+        touch-action: none; /* Prevent default touch behaviors */
+        -webkit-touch-callout: none; /* Prevent callout on long press */
+        -webkit-user-select: none;
         user-select: none;
         width: 100%;
         justify-content: center;

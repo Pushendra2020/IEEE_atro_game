@@ -7,7 +7,8 @@ const server = http.createServer(app);
 const io = new Server(server);
 const bodyParser = require('body-parser');
 const QRCode = require("qrcode");
-const cors =require('cors');
+const cors = require('cors');
+
 const { v4: uuidv4 } = require("uuid");
 app.use(cors());
 // Serve static files
@@ -32,7 +33,7 @@ db.connect((err) => {
 });
 
 
-let leaderboard = [];
+
 
 // Handle socket connections
 io.on('connection', (socket) => {
@@ -54,6 +55,42 @@ app.post('/EnterScore', (req, res) => {
     console.log('Received score:', playerName, score);
     handleScoreUpdate(playerName, score, res);
 });
+
+let waitingPlayers = {}; 
+
+io.on("connection", (socket) => {
+    console.log(`Player connected: ${socket.id}`);
+    
+    // Add player to waiting list
+    waitingPlayers[socket.id] = { approved: false };
+    socket.emit("waiting"); // Notify the client it's waiting
+
+    // Broadcast updated player list to the host dashboard
+    broadcastWaitingPlayers();
+
+    // Handle approval from the host
+    socket.on("approve", (playerName) => {
+        if (waitingPlayers[playerName]) {
+            waitingPlayers[playerName].approved = true;
+            io.to(playerName).emit("approved"); // Notify the approved player
+            console.log(`Player approved: ${playerName}`);
+            delete waitingPlayers[playerName]; // Remove from waiting list
+            broadcastWaitingPlayers(); // Update host view
+        }
+    });
+
+    // Handle disconnections
+    socket.on("disconnect", () => {
+        console.log(`Player disconnected: ${socket.id}`);
+        delete waitingPlayers[socket.id];
+        broadcastWaitingPlayers(); // Update host view
+    });
+});
+
+function broadcastWaitingPlayers() {
+    io.emit("waitingPlayers", waitingPlayers);
+}
+
 
 function handleScoreUpdate(playerName, score, res = null) {
     const selectQuery = 'SELECT * FROM userInfo WHERE user_name = ?';
@@ -125,34 +162,40 @@ app.post('/deleteExceptHighest', (req, res) => {
 
 app.post("/generate_qr", async (req, res) => {
     try {
-      // Generate a unique ID
-      const qrId = Math.random().toString(36).substring(2, 9);
-  
-      // Define the redirect URL with the unique QR ID
-      const validationUrl = `http://192.168.101.153:3000/validate_qr?qr_id=${qrId}`;
-  
-      // Set expiration time (20 seconds from now)
-      const expiresAt = new Date(Date.now() + 20 * 1000);
-  
-      // Generate the QR code
-      const qrCode = await QRCode.toDataURL(validationUrl);
-  
-      // Save the QR code data in the database
-      const query = "INSERT INTO qr_codes (qr_id, is_used, expires_at) VALUES (?, ?, ?)";
-      db.query(query, [qrId, false, expiresAt], (err) => {
-        if (err) {
-          console.error("Error saving QR code:", err);
-          return res.status(500).json({ success: false, message: "Database error" });
-        }
-        // Respond with success and the generated QR code data
-        res.json({ success: true, qrCode:qrCode, qr_id: qrId });
-      });
+        // Generate a unique ID
+        const qrId = Math.random().toString(36).substring(2, 9);
+
+        // Define the redirect URL with the unique QR ID
+        //const validationUrl = `http://192.168.0.102:5000/validate_qr?qr_id=${qrId}`;
+
+        // Set expiration time (20 seconds from now)
+        //const expiresAt = new Date(Date.now() + 20 * 1000);
+
+        // Generate the QR code
+        const qrCode = await QRCode.toDataURL(`http://192.168.215.153:5000/working_game.html?qr_id=${qrId}`);
+
+        // Save the QR code data in the database
+        const query = "INSERT INTO qr_codes (qr_id, is_used) VALUES (?, ?)";
+        db.query(query, [qrId, false], (err) => {
+            if (err) {
+                console.error("Error saving QR code:", err);
+                return res.status(500).json({ success: false, message: "Database error" });
+            }
+            // Respond with success and the generated QR code data
+            // res.json({ success: true, qrCode: qrCode, qr_id: qrId });
+            res.json({ 
+                success: true, 
+                qrCode: qrCode, 
+                qr_id: qrId, 
+            });
+            
+        });
     } catch (error) {
-      console.error("Error generating QR code:", error);
-      res.status(500).json({ success: false, message: "Failed to generate QR code" });
+        console.error("Error generating QR code:", error);
+        res.status(500).json({ success: false, message: "Failed to generate QR code" });
     }
-  });
-  
+});
+
 
 
 app.get("/validate_qr", (req, res) => {
@@ -161,41 +204,44 @@ app.get("/validate_qr", (req, res) => {
     // Query the database for the QR code
     const query = "SELECT * FROM qr_codes WHERE qr_id = ?";
     db.query(query, [qr_id], (err, results) => {
-      if (err) {
-        console.error("Error validating QR code:", err);
-        return res.status(500).send("Server error. Please try again later.");
-      }
-  
-      if (results.length === 0) {
-        return res.status(404).send("QR Code not found.");
-      }
-  
-      const qrCode = results[0];
-      const now = new Date();
-  
-      // Check if the QR code is expired
-      if (now > new Date(qrCode.expires_at)) {
-        return res.redirect("https://www.amazon.com/"); // Redirect to expiration page
-      }
-  
-      // Check if the QR code has already been used
-      if (qrCode.is_used) {
-        return res.status(403).send("QR Code has already been used.");
-      }
-  
-      // Mark the QR code as used (optional)
-      const updateQuery = "UPDATE qr_codes SET is_used = true WHERE qr_id = ?";
-      db.query(updateQuery, [qr_id], (updateErr) => {
-        if (updateErr) {
-          console.error("Error updating QR code:", updateErr);
+        if (err) {
+            console.error("Error validating QR code:", err);
+            return res.status(500).send("Server error. Please try again later.");
         }
-      });
-  
-      // Redirect to the intended page
-      res.redirect("http://192.168.101.153:3000/working_game.html");
+
+        if (results.length === 0) {
+            return res.status(404).send("QR Code not found.");
+        }
+
+        const qrCode = results[0];
+        console.log(qrCode);
+        const now = new Date();
+        console.log(now);
+
+        // Check if the QR code is expired
+        // if (now > new Date(qrCode.expires_at)) {
+        //     return res.redirect("http://192.168.0.102:5000/pat.html"); // Redirect to expiration page
+        // }
+
+        // Check if the QR code has already been used
+        if (qrCode.is_used) {
+            return res.status(403).send("QR Code has already been used.");
+        }
+
+        // Mark the QR code as used (optional)
+        // const updateQuery = "UPDATE qr_codes SET is_used = true WHERE qr_id = ?";
+        // db.query(updateQuery, [qr_id], (updateErr) => {
+        //     if (updateErr) {
+        //         console.error("Error updating QR code:", updateErr);
+        //     }
+        // });
+
+        // Redirect to the intended page
+        res.redirect("http://192.168.215.153:5000/working_game.html");
     });
-  });
-  
+});
+
+
 
 
 app.use((req, res, next) => {
@@ -233,14 +279,14 @@ app.get("/redirect", (req, res) => {
             }
 
             // Redirect to the actual destination
-            return res.redirect('https://www.amazon.com/');
+            return res.redirect('http://192.168.0.102:5000/pat.html');
         });
     });
 });
 
 
 
-const PORT = 3000;
+const PORT = 5000;
 server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

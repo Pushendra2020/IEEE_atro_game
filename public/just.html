@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Host Dashboard</h1>
+    <ul id="player-list"></ul>
+
+    <script>
+        const socket = io();
+        const playerList = document.getElementById("player-list");
+
+        // Maintain a list of waiting players locally
+        let waitingPlayers = {};
+
+        // Fetch waiting players from the server
+        socket.on("connect", () => {
+            console.log("Connected to host dashboard");
+        });
+
+        // Listen for updates from the server about waiting players
+        socket.on("waitingPlayers", (players) => {
+            waitingPlayers = players;
+            renderPlayerList();
+        });
+
+        function renderPlayerList() {
+            playerList.innerHTML = "";
+
+            for (const playerName in waitingPlayers) {
+                const playerItem = document.createElement("li");
+                playerItem.textContent = `Player ID: ${playerName}`;
+
+                const approveButton = document.createElement("button");
+                approveButton.textContent = "Approve";
+                approveButton.onclick = () => approvePlayer(playerName);
+
+                playerItem.appendChild(approveButton);
+                playerList.appendChild(playerItem);
+            }
+        }
+
+        function approvePlayer(playerName) {
+            socket.emit("approve", playerName);
+        }
+       export default renderPlayerList;
+    </script>
+</body>
+</html>

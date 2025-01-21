@@ -1,177 +1,44 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Code Display</title>
-</head>
-
-<body>
-  <h1>Generated QR Code</h1>
-  <div id="qr-container">
-QR code image will be inserted here
-  </div>
-
-  <script>
-
-    fetch("http://192.168.101.153:3000/generate_qr", {
-      method: "POST",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          // Calculate remaining time until expiration
-          const expiresAt = new Date(data.expiresAt);
-          const now = new Date();
-          function ok() {
-            return data.qr_id
-          }
-          const img = document.createElement("img");
-
-          if (now < expiresAt) {
-            // Show valid QR code
-            img.src = data.qrCode;
-          } else {
-            // Show expired/redirect QR code
-            img.src = data.reQr;
-          }
-
-          img.alt = "Generated QR Code";
-          img.style.width = "200px";
-          img.style.height = "200px";
-
-          document.getElementById("qr-container").appendChild(img);
-        } else {
-          console.error("Failed to generate QR code");
-        }
-      })
-      .catch((error) => console.error("Error:", error));
-
-
-    const qr_id =ok();
-    fetch(`https://example.com/validate?'qr_id'=${qr_id}`)
-      .then((response) => {
-        if (response.status === 410) {
-          alert("QR Code has expired!");
-          window.location.href = "https://www.amazon.com/";
-        } else if (response.ok) {
-          window.location.href = "http://192.168.101.153:3000/working_game.html";
-        } else {
-          alert("Invalid QR Code.");
-        }
-      })
-      .catch((error) => console.error("Error:", error));
-  </script>
-</body>
-
-</html>-->
-
-
-
-<!-- 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Code Display</title>
-</head>
-
-<body>
-  <h1>Generated QR Code</h1>
-  <div id="qr-container">
-    QR code image will be inserted here 
-  </div>
-
-  <script>
-    let qrId; // Store qr_id globally for validation later
-
-    // Generate the QR Code
-    fetch("http://192.168.101.153:3000/generate_qr", {
-      method: "POST",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          // Save the qr_id for validation later
-          qrId = data.qr_id;
-
-          // Calculate remaining time until expiration
-          const expiresAt = new Date(data.expiresAt);
-          const now = new Date();
-
-          const img = document.createElement("img");
-
-          if (now < expiresAt) {
-            // Show valid QR code
-            img.src = data.qrCode;
-          } else {
-            // Show expired/redirect QR code
-            img.src = data.reQr;
-          }
-
-          img.alt = "Generated QR Code";
-          img.style.width = "200px";
-          img.style.height = "200px";
-
-          document.getElementById("qr-container").appendChild(img);
-        } else {
-          console.error("Failed to generate QR code");
-        }
-      })
-      .catch((error) => console.error("Error:", error));
-
-    // Simulate validation after QR code is scanned
-    function validateQRCode() {
-      if (!qrId) {
-        console.error("QR ID not available yet.");
-        return;
-      }
-
-      fetch(`http://192.168.101.153:3000/validate_qr?qr_id=${qrId}`)
-        .then((response) => {
-          if (response.status === 410) {
-            alert("QR Code has expired!");
-            window.location.href = "https://www.amazon.com/";
-          } else if (response.ok) {
-            alert("QR Code is valid!");
-            window.location.href = "http://192.168.101.153:3000/working_game.html";
-          } else {
-            alert("Invalid QR Code.");
-          }
-        })
-        .catch((error) => console.error("Error:", error));
-    }
-
-    // Call the validation function after a delay to simulate user interaction
-    setTimeout(validateQRCode, 15000); // Replace 5000ms with the actual time after which QR should be validated
-  </script>
-</body>
-
-</html> -->
-
-
-
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Generate QR Code</title>
+<style>
+  #clo{
+    text-decoration: none;
+    padding: 15px;
+    color: #fff;
+    background-color: #4CAF50;
+  }
+
+  .ok{
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
 </head>
 
 <body>
-  <h1>Generate and Display QR Code</h1>
-  <div id="qr-container">
-    <!-- QR code image will be inserted here -->
+  <div class="ok">
+    <h1>Generate and Display QR Code</h1>
+    <div id="qr-container">
+       
+    </div>
+    <button id="clo">Click To Reload</button>
   </div>
-
   <script>
     // Fetch the QR code from the server
-    fetch("http://192.168.101.153:3000/generate_qr", {
+let clo = document.getElementById('clo');
+clo.addEventListener('click', function() {
+  location.reload();
+})
+
+    fetch("http://192.168.215.153:5000/generate_qr", {
       method: "POST",
     })
       .then((response) => response.json())
@@ -195,4 +62,105 @@ QR code image will be inserted here
   </script>
 </body>
 
-</html>
+</html> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate QR Code</title>
+  <style>
+    #clo {
+      text-decoration: none;
+      padding: 15px;
+      color: #fff;
+      background-color: #4CAF50;
+    }
+
+    .ok {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ok">
+    <h1>Generate and Display QR Code</h1>
+    <div id="qr-container">
+      QR code image will be inserted here 
+    </div>
+    <div id="countdown">Expires in: <span id="timer"></span></div>
+    <button id="clo">Click To Reload</button>
+  </div>
+  <script>
+    let clo = document.getElementById('clo');
+    clo.addEventListener('click', function () {
+      location.reload();
+    });
+
+    // Fetch the QR code from the server
+    fetch("http://192.168.0.102:5000/generate_qr", {
+      method: "POST",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Create and display the QR code image
+          const img = document.createElement("img");
+          img.src = data.qrCode;
+          img.alt = "Generated QR Code";
+          img.style.width = "200px";
+          img.style.height = "200px";
+
+          document.getElementById("qr-container").appendChild(img);
+
+          console.log("Scan this QR code:", data.qrCode);
+
+          // Countdown Timer
+          const expirationTime = new Date(data.expiresAt).getTime();
+          const timerElement = document.getElementById("timer");
+
+          const countdown = setInterval(() => {
+            const now = new Date().getTime();
+            const timeLeft = expirationTime - now;
+
+            if (timeLeft > 0) {
+              const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+              const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+              timerElement.textContent = `${seconds}s`;
+            } else {
+              clearInterval(countdown);
+              timerElement.textContent = "Expired!";
+             // img.src = ""; // Optionally, clear the QR code image
+             // alert("The QR Code has expired!");
+            }
+          }, 1000);
+        } else {
+          console.error("Failed to generate QR code");
+        }
+      })
+      .catch((error) => console.error("Error generating QR code:", error));
+  </script>
+</body>
+
+</html> -->
