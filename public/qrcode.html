@@ -32,13 +32,18 @@
     <button id="clo">Click To Reload</button>
   </div>
   <script>
+    //require('dotenv').config();
+    const ip = "192.168.29.123";
+    //const ip = "192.168.215.153";
+    //const ip = "192.168.253.153"
+    //const ip = "192.168.4.153"
     // Fetch the QR code from the server
 let clo = document.getElementById('clo');
 clo.addEventListener('click', function() {
   location.reload();
 })
 
-    fetch("http://192.168.215.153:5000/generate_qr", {
+    fetch(`http://${ip}:5000/generate_qr`, {
       method: "POST",
     })
       .then((response) => response.json())

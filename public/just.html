@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Host Dashboard</title>
+    <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <h1>Host Dashboard</h1>
     <ul id="player-list"></ul>
-
+<button id="approveAllButton">Approve All</button>
     <script>
         const socket = io();
         const playerList = document.getElementById("player-list");
@@ -26,6 +27,7 @@
         socket.on("waitingPlayers", (players) => {
             waitingPlayers = players;
             renderPlayerList();
+           
         });
 
         function renderPlayerList() {
@@ -39,15 +41,33 @@
                 approveButton.textContent = "Approve";
                 approveButton.onclick = () => approvePlayer(playerName);
 
+                const RButton = document.createElement("button");
+                RButton.textContent = "Reject";
+                RButton.onclick = () => Rplayer(playerName);
+                
+                
                 playerItem.appendChild(approveButton);
+                playerItem.appendChild(RButton);
                 playerList.appendChild(playerItem);
+
             }
         }
 
+        Rplayer = (playerName)=>{
+            socket.emit("rejectPlayer", playerName);
+        }
+    
         function approvePlayer(playerName) {
             socket.emit("approve", playerName);
         }
-       export default renderPlayerList;
+       const approveAllButton = document.getElementById("approveAllButton");
+        approveAllButton.onclick = () => {
+            for (const playerName in waitingPlayers) {
+                approvePlayer(playerName);
+            }
+        };
     </script>
 </body>
-</html>
+</html> 
+
+

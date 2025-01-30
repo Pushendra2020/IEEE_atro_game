@@ -8,7 +8,8 @@ const io = new Server(server);
 const bodyParser = require('body-parser');
 const QRCode = require("qrcode");
 const cors = require('cors');
-
+require('dotenv').config();
+const ip = process.env.ip;
 const { v4: uuidv4 } = require("uuid");
 app.use(cors());
 // Serve static files
@@ -78,6 +79,16 @@ io.on("connection", (socket) => {
             broadcastWaitingPlayers(); // Update host view
         }
     });
+
+
+socket.on('rejectPlayer', (playerName) => {
+    if (waitingPlayers[playerName]) {
+        io.to(playerName).emit('rejected', { redirectUrl: `http://${ip}:5000/pat.html` });
+        delete waitingPlayers[playerName];
+        console.log(`Player rejected: ${playerName}`);
+    }
+});
+
 
     // Handle disconnections
     socket.on("disconnect", () => {
@@ -172,8 +183,8 @@ app.post("/generate_qr", async (req, res) => {
         //const expiresAt = new Date(Date.now() + 20 * 1000);
 
         // Generate the QR code
-        const qrCode = await QRCode.toDataURL(`http://192.168.215.153:5000/working_game.html?qr_id=${qrId}`);
-
+        const qrCode = await QRCode.toDataURL(`http://${ip}:5000/working_game.html?qr_id=${qrId}`);
+console.log(ip)
         // Save the QR code data in the database
         const query = "INSERT INTO qr_codes (qr_id, is_used) VALUES (?, ?)";
         db.query(query, [qrId, false], (err) => {
@@ -237,7 +248,7 @@ app.get("/validate_qr", (req, res) => {
         // });
 
         // Redirect to the intended page
-        res.redirect("http://192.168.215.153:5000/working_game.html");
+        res.redirect(`http://${ip}:5000/working_game.html`);
     });
 });
 
@@ -279,7 +290,7 @@ app.get("/redirect", (req, res) => {
             }
 
             // Redirect to the actual destination
-            return res.redirect('http://192.168.0.102:5000/pat.html');
+            return res.redirect(`http://${ip}:5000/pat.html`);
         });
     });
 });
